@@ -28,11 +28,11 @@ if not supabase_url or not supabase_key:
 
 supabase: Client = create_client(supabase_url, supabase_key)
 
-# 2. Initialize Hugging Face Flan-T5 lightweight model (Fixed to 'text-generation')
+# 2. Initialize Hugging Face Flan-T5 lightweight model
 print("Loading Flan-T5 AI Triage Model...")
 try:
     triage_classifier = pipeline("text-generation", model="google/flan-t5-small")
-    print("Flan-T5 Model loaded successfully 🟢")
+    print("Flan-T5 Model loaded successfully")
 except Exception as e:
     print(f"Warning: Could not load local HF model ({e}). Falling back to heuristic extraction.")
     triage_classifier = None
@@ -41,10 +41,14 @@ class TriageRequest(BaseModel):
     report_id: str
     transcript: str
 
+class SummaryRequest(BaseModel):
+    descriptions: list[str]
+    issue_type: str
+
 # 3. Define routes AFTER app is initialized
 @app.get("/")
 def read_root():
-    return {"status": "Hydra Backend with Flan-T5 Triage Engine is operational 🟢"}
+    return {"status": "Hydra Backend with Flan-T5 Triage Engine is operational"}
 
 @app.post("/api/triage")
 def triage_report(req: TriageRequest):
@@ -52,7 +56,6 @@ def triage_report(req: TriageRequest):
         transcript = req.transcript.lower()
         issue_category = "WATER_SHORTAGE"
         
-        # Immediate keyword matching for robust reliability
         if "burst" in transcript or "leak" in transcript or "phat" in transcript:
             issue_category = "PIPE_BURST"
         elif "block" in transcript or "jam" in transcript:
@@ -68,7 +71,6 @@ def triage_report(req: TriageRequest):
             )
             ai_res = triage_classifier(prompt, max_new_tokens=15, do_sample=False)
             
-            # Handle text-generation output structure safely
             generated_text = ""
             if isinstance(ai_res, list) and len(ai_res) > 0:
                 if 'generated_text' in ai_res[0]:
@@ -99,3 +101,23 @@ def triage_report(req: TriageRequest):
         print("Error:")
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/summarize-cluster")
+def summarize_cluster(req: SummaryRequest):
+    try:
+        combined_text = " ".join(req.descriptions)
+        if triage_classifier and len(combined_text.strip()) > 0:
+            prompt = f"Summarize these reports about {req.issue_type} into a concise executive brief: '{combined_text}'"
+            ai_res = triage_classifier(prompt, max_new_tokens=45, do_sample=False)
+            summary = ""
+            if isinstance(ai_res, list) and len(ai_res) > 0 and 'generated_text' in ai_res[0]:
+                summary = ai_res[0]['generated_text'].replace(prompt, "").strip()
+            if len(summary) < 5:
+                summary = f"Cluster of {len(req.descriptions)} reports regarding {req.issue_type} detected. Field intervention recommended."
+            return {"summary": summary}
+        else:
+            return {"summary": f"Cluster of {len(req.descriptions)} reports regarding {req.issue_type} requiring municipal attention."}
+    except Exception as e:
+        print("Summary Error:")
+        traceback.print_exc()
+        return {"summary": f"Cluster of {len(req.descriptions)} reports regarding {req.issue_type}."}
