@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '../services/supabase';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -16,14 +16,12 @@ L.Icon.Default.mergeOptions({
   shadowUrl: markerShadow,
 });
 
-// Helper component to render the true leaflet.heat canvas layer
 function HeatmapLayer({ points }) {
   const map = useMap();
 
   useEffect(() => {
     if (!map || !points.length) return;
 
-    // Format points as [lat, lng, intensity]
     const heatPoints = points
       .filter(p => p.latitude && p.longitude)
       .map(p => [
@@ -54,14 +52,20 @@ function HeatmapLayer({ points }) {
 
 export default function IncidentsMap() {
   const [reports, setReports] = useState([]);
-  const [mapMode, setMapMode] = useState('pins'); // 'pins' or 'thermal'
+  const [mapMode, setMapMode] = useState('pins');
 
   useEffect(() => {
     fetchReports();
   }, []);
 
   const fetchReports = async () => {
-    const { data, error } = await supabase.from('reports').select('*');
+    // Fetch only active reports so resolved ones disappear from the GIS map and thermal radar
+    const { data, error } = await supabase
+      .from('reports')
+      .select('*')
+      .neq('status', 'resolved')
+      .neq('status', 'RESOLVED');
+
     if (!error && data) {
       setReports(data);
     }
@@ -69,7 +73,6 @@ export default function IncidentsMap() {
 
   return (
     <div className="flex-1 flex flex-col h-[calc(100vh-73px)] relative">
-      {/* Map Header / Controls Overlay */}
       <div className="absolute top-4 right-4 z-[1000] bg-white/90 backdrop-blur-md p-2 rounded-2xl shadow-lg border border-slate-200 flex gap-2">
         <button
           onClick={() => setMapMode('thermal')}
@@ -77,7 +80,7 @@ export default function IncidentsMap() {
             mapMode === 'thermal' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-600 hover:bg-slate-100'
           }`}
         >
-          🔥 Thermal Radar
+          Thermal Radar
         </button>
         <button
           onClick={() => setMapMode('pins')}
@@ -85,11 +88,10 @@ export default function IncidentsMap() {
             mapMode === 'pins' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-600 hover:bg-slate-100'
           }`}
         >
-          📍 Precision Pins
+          Precision Pins
         </button>
       </div>
 
-      {/* Fullscreen Map */}
       <div className="flex-grow w-full h-full">
         <MapContainer 
           center={[24.7804, 93.9397]} 

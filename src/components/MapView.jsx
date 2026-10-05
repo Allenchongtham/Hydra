@@ -2,11 +2,9 @@ import { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import { supabase } from '../services/supabase';
 
-// CRITICAL: Leaflet CSS required for the map to render
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 
-// Fix for React-Leaflet's default marker icon bug
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';
@@ -23,9 +21,12 @@ export default function MapView() {
 
   useEffect(() => {
     const fetchReports = async () => {
+      // Fetch only active reports so resolved ones disappear from the map
       const { data, error } = await supabase
         .from('reports')
         .select('*')
+        .neq('status', 'resolved')
+        .neq('status', 'RESOLVED')
         .order('created_at', { ascending: false });
         
       if (!error && data) {
@@ -38,7 +39,7 @@ export default function MapView() {
 
   return (
     <MapContainer 
-      center={[24.55, 93.81]} // Centered on the region
+      center={[24.55, 93.81]}
       zoom={11} 
       style={{ height: '100%', width: '100%', minHeight: '450px', zIndex: 10 }}
     >
@@ -56,10 +57,8 @@ export default function MapView() {
                   Issue: {report.issue_type || 'Field Report'}
                 </p>
                 <p className="text-xs text-slate-600 mb-2">{report.description}</p>
-                <span className={`text-[10px] px-2 py-1 rounded-full text-white ${
-                  report.status === 'resolved' ? 'bg-emerald-500' : 'bg-amber-500'
-                }`}>
-                  {report.status?.toUpperCase() || 'NEW'}
+                <span className="text-[10px] px-2 py-1 rounded-full text-white bg-amber-500">
+                  {report.status?.toUpperCase() || 'ACTIVE'}
                 </span>
               </div>
             </Popup>

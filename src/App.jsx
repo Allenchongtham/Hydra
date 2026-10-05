@@ -3,7 +3,8 @@ import { supabase } from './services/supabase';
 import ReportForm from './components/ReportForm';
 import MapView from './components/MapView';
 import IncidentsMap from './pages/IncidentsMap';
-import AiTriageFeed from './pages/AiTriageFeed'; // <-- 1. Import the component
+import AiTriageFeed from './pages/AiTriageFeed';
+import AdminDashboard from './pages/AdminDashboard';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -19,8 +20,8 @@ export default function App() {
     if (!error && data) {
       setStats({
         total: data.length,
-        active: data.filter(r => r.status !== 'resolved').length,
-        resolved: data.filter(r => r.status === 'resolved').length
+        active: data.filter(r => String(r.status || '').toLowerCase() !== 'resolved').length,
+        resolved: data.filter(r => String(r.status || '').toLowerCase() === 'resolved').length
       });
     }
   };
@@ -37,8 +38,8 @@ export default function App() {
         <div>
           {/* Logo Brand */}
           <div className="flex items-center gap-3 mb-8">
-            <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-md shadow-blue-500/20">
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 2.25c-5.385 5.862-8.25 9.77-8.25 13.5a8.25 8.25 0 0016.5 0c0-3.73-2.865-7.638-8.25-13.5z" /></svg>
+            <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-md shadow-blue-500/20 font-bold">
+              H
             </div>
             <div>
               <h1 className="text-lg font-extrabold tracking-tight text-slate-900">Hydra</h1>
@@ -54,7 +55,6 @@ export default function App() {
                 activeTab === 'dashboard' ? 'bg-blue-50 text-blue-700' : 'text-slate-600 hover:bg-slate-50 font-medium'
               }`}
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
               Dashboard
             </button>
 
@@ -64,7 +64,6 @@ export default function App() {
                 activeTab === 'map' ? 'bg-blue-50 text-blue-700' : 'text-slate-600 hover:bg-slate-50 font-medium'
               }`}
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" /></svg>
               Incidents Map
             </button>
 
@@ -74,8 +73,16 @@ export default function App() {
                 activeTab === 'triage' ? 'bg-blue-50 text-blue-700' : 'text-slate-600 hover:bg-slate-50 font-medium'
               }`}
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
               AI Triage Feed
+            </button>
+
+            <button
+              onClick={() => setActiveTab('admin')}
+              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-semibold text-sm transition ${
+                activeTab === 'admin' ? 'bg-blue-50 text-blue-700' : 'text-slate-600 hover:bg-slate-50 font-medium'
+              }`}
+            >
+              Authority Command
             </button>
           </nav>
         </div>
@@ -105,6 +112,7 @@ export default function App() {
               {activeTab === 'dashboard' && 'Farmer & Community Dashboard'}
               {activeTab === 'map' && 'Incidents GIS Command Center'}
               {activeTab === 'triage' && 'AI Triage & Telemetry Feed'}
+              {activeTab === 'admin' && 'Authority Incident Command Center'}
             </h2>
             <p className="text-xs text-slate-500">Real-time ground-truth irrigation telemetry and reporting.</p>
           </div>
@@ -126,8 +134,8 @@ export default function App() {
                   <p className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">Total Reports</p>
                   <h3 className="text-3xl font-extrabold text-slate-900">{stats.total}</h3>
                 </div>
-                <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" /></svg>
+                <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
+                  All
                 </div>
               </div>
 
@@ -136,8 +144,8 @@ export default function App() {
                   <p className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">Active Incidents</p>
                   <h3 className="text-3xl font-extrabold text-amber-600">{stats.active}</h3>
                 </div>
-                <div className="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                <div className="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold">
+                  !
                 </div>
               </div>
 
@@ -146,8 +154,8 @@ export default function App() {
                   <p className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">Resolved</p>
                   <h3 className="text-3xl font-extrabold text-emerald-600">{stats.resolved}</h3>
                 </div>
-                <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
+                  OK
                 </div>
               </div>
             </div>
@@ -184,9 +192,8 @@ export default function App() {
         )}
 
         {activeTab === 'map' && <IncidentsMap />}
-
-        {/* 2. Render the actual component instead of the static placeholder */}
         {activeTab === 'triage' && <AiTriageFeed />}
+        {activeTab === 'admin' && <AdminDashboard />}
 
       </div>
     </div>

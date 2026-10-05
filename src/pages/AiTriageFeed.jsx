@@ -128,7 +128,7 @@ export default function AiTriageFeed() {
                 </div>
 
                 <div className="flex justify-between items-center pt-3 border-t border-slate-100 text-xs text-slate-500">
-                  <span>📍 Lat: {report.latitude?.toFixed(4)}, Lon: {report.longitude?.toFixed(4)}</span>
+                  <span> Lat: {report.latitude?.toFixed(4)}, Lon: {report.longitude?.toFixed(4)}</span>
                   <span className={`px-2 py-0.5 rounded text-[10px] uppercase font-bold ${
                     report.status === 'resolved' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
                   }`}>
