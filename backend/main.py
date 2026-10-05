@@ -5,10 +5,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from supabase import create_client, Client
 from dotenv import load_dotenv
+from transformers import pipeline
 
 load_dotenv()
 
-app = FastAPI(title="Hydra Browser-Speech Triage API")
+# 1. Initialize FastAPI app FIRST
+app = FastAPI(title="Hydra AI Triage API")
 
 app.add_middleware(
     CORSMiddleware,
@@ -26,29 +28,70 @@ if not supabase_url or not supabase_key:
 
 supabase: Client = create_client(supabase_url, supabase_key)
 
+# 2. Initialize Hugging Face Flan-T5 lightweight model (Fixed to 'text-generation')
+print("Loading Flan-T5 AI Triage Model...")
+try:
+    triage_classifier = pipeline("text-generation", model="google/flan-t5-small")
+    print("Flan-T5 Model loaded successfully 🟢")
+except Exception as e:
+    print(f"Warning: Could not load local HF model ({e}). Falling back to heuristic extraction.")
+    triage_classifier = None
+
 class TriageRequest(BaseModel):
     report_id: str
-    transcript: str  # Direct text coming from browser speech API
+    transcript: str
 
+# 3. Define routes AFTER app is initialized
 @app.get("/")
 def read_root():
-    return {"status": "Hydra Backend with Browser AI is operational 🟢"}
+    return {"status": "Hydra Backend with Flan-T5 Triage Engine is operational 🟢"}
 
 @app.post("/api/triage")
 def triage_report(req: TriageRequest):
     try:
-        # Save the browser-transcribed text straight into Supabase
+        transcript = req.transcript.lower()
+        issue_category = "WATER_SHORTAGE"
+        
+        # Immediate keyword matching for robust reliability
+        if "burst" in transcript or "leak" in transcript or "phat" in transcript:
+            issue_category = "PIPE_BURST"
+        elif "block" in transcript or "jam" in transcript:
+            issue_category = "CANAL_BLOCK"
+        elif "dirty" in transcript or "smell" in transcript or "color" in transcript or "contamination" in transcript:
+            issue_category = "CONTAMINATION"
+        elif "nahi" in transcript or "shortage" in transcript or "dry" in transcript or "no water" in transcript:
+            issue_category = "WATER_SHORTAGE"
+        elif triage_classifier:
+            prompt = (
+                f"Classify this water report into one of these categories "
+                f"(PIPE_BURST, CANAL_BLOCK, WATER_SHORTAGE, CONTAMINATION): '{req.transcript}'"
+            )
+            ai_res = triage_classifier(prompt, max_new_tokens=15, do_sample=False)
+            
+            # Handle text-generation output structure safely
+            generated_text = ""
+            if isinstance(ai_res, list) and len(ai_res) > 0:
+                if 'generated_text' in ai_res[0]:
+                    generated_text = ai_res[0]['generated_text'].strip().upper()
+            
+            valid_categories = ["PIPE_BURST", "CANAL_BLOCK", "WATER_SHORTAGE", "CONTAMINATION"]
+            for cat in valid_categories:
+                if cat in generated_text:
+                    issue_category = cat
+                    break
+
         update_payload = {
-            "issue_type": "VOICE_REPORT_PROCESSED",
-            "description": f"[BROWSER AI SPEECH]: {req.transcript}",
+            "issue_type": issue_category,
+            "description": f"{req.transcript}",
             "status": "active"
         }
 
         db_response = supabase.table("reports").update(update_payload).eq("id", req.report_id).execute()
 
         return {
-            "message": "Triage complete", 
-            "transcript": req.transcript, 
+            "message": "AI Triage complete",
+            "category": issue_category,
+            "transcript": req.transcript,
             "data": db_response.data
         }
     
