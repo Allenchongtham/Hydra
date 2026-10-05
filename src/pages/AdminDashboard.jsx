@@ -1,6 +1,50 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../services/supabase';
 
+// Reusable component for individual report rows with expand/collapse support
+function ReportRowItem({ report, parseReportContent, setModalImage }) {
+  const [expanded, setExpanded] = useState(false);
+  const parsed = parseReportContent(report.description);
+  const isReportResolved = String(report.status || '').toLowerCase() === 'resolved';
+  const isLong = parsed.text.length > 90;
+
+  return (
+    <div className="text-xs text-slate-700 bg-white p-3 rounded-lg border border-slate-100 space-y-2">
+      <div className="flex justify-between items-start gap-3">
+        <div className="flex items-start gap-2 flex-grow min-w-0">
+          <span className={`w-2 h-2 rounded-full shrink-0 mt-1 ${isReportResolved ? 'bg-emerald-500' : 'bg-amber-500'}`}></span>
+          <div className="flex-grow min-w-0">
+            <p className={`font-medium text-slate-800 break-words ${!expanded && isLong ? 'line-clamp-2' : ''}`}>
+              "{parsed.text}"
+            </p>
+            {isLong && (
+              <button
+                onClick={() => setExpanded(!expanded)}
+                className="text-[11px] font-bold text-blue-600 hover:text-blue-700 mt-1 transition focus:outline-none"
+              >
+                {expanded ? 'Show Less' : 'Show More'}
+              </button>
+            )}
+          </div>
+        </div>
+        <div className="flex items-center gap-2 shrink-0 pt-0.5">
+          {parsed.imageUrl && (
+            <button
+              onClick={() => setModalImage(parsed.imageUrl)}
+              className="px-2.5 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg text-[11px] font-bold transition"
+            >
+              See Photo
+            </button>
+          )}
+          <span className="text-[10px] text-slate-400 whitespace-nowrap">
+            {new Date(report.created_at).toLocaleTimeString()}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function AdminDashboard() {
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -14,6 +58,8 @@ export default function AdminDashboard() {
   const [resolvingCluster, setResolvingCluster] = useState(null);
   const [actionPasscode, setActionPasscode] = useState('');
   const [actionAuthError, setActionAuthError] = useState(false);
+  
+  const [clusterSummaries, setClusterSummaries] = useState({});
 
   const handleLogin = (e) => {
     e.preventDefault();
@@ -34,8 +80,40 @@ export default function AdminDashboard() {
 
     if (!error && data) {
       setReports(data);
+      generateSummaries(data);
     }
     setLoading(false);
+  };
+
+  const generateSummaries = async (reportList) => {
+    const clustersMap = {};
+    reportList.forEach((report) => {
+      const latKey = report.latitude ? report.latitude.toFixed(3) : '0.000';
+      const lonKey = report.longitude ? report.longitude.toFixed(3) : '0.000';
+      const issueType = report.issue_type || 'WATER_SHORTAGE';
+      const key = `${issueType}_${latKey}_${lonKey}`;
+
+      if (!clustersMap[key]) {
+        clustersMap[key] = { issue_type: issueType, descriptions: [] };
+      }
+      clustersMap[key].descriptions.push(report.description || '');
+    });
+
+    const newSummaries = {};
+    for (const [key, cluster] of Object.entries(clustersMap)) {
+      try {
+        const response = await fetch('http://localhost:8000/api/summarize-cluster', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ descriptions: cluster.descriptions, issue_type: cluster.issue_type })
+        });
+        const resData = await response.json();
+        newSummaries[key] = resData.summary || `Cluster containing ${cluster.descriptions.length} telemetry reports.`;
+      } catch (err) {
+        newSummaries[key] = `Cluster containing ${cluster.descriptions.length} telemetry reports requiring action.`;
+      }
+    }
+    setClusterSummaries(newSummaries);
   };
 
   useEffect(() => {
@@ -77,7 +155,7 @@ export default function AdminDashboard() {
     });
 
     return Object.values(clusters).map(cluster => {
-      const allResolved = cluster.reports.every(r => r.status === 'resolved');
+      const allResolved = cluster.reports.every(r => String(r.status || '').toLowerCase() === 'resolved');
       return { ...cluster, status: allResolved ? 'resolved' : 'active' };
     });
   };
@@ -203,7 +281,7 @@ export default function AdminDashboard() {
                 cluster.status === 'resolved' ? 'border-emerald-200 bg-emerald-50/20' : 'border-slate-200'
               }`}
             >
-              <div className="space-y-2 flex-grow">
+              <div className="space-y-3 flex-grow w-full">
                 <div className="flex items-center gap-3">
                   <span className={`text-xs px-3 py-1 rounded-full font-bold border ${getCategoryBadge(cluster.issue_type)}`}>
                     {cluster.issue_type}
@@ -216,36 +294,33 @@ export default function AdminDashboard() {
                   </span>
                 </div>
 
+                {/* AI Executive Briefing / Triage Summary Card */}
+                <div className="bg-blue-50/70 border border-blue-100 rounded-xl p-3.5 text-xs text-blue-900 shadow-sm">
+                  <div className="font-extrabold mb-1 text-blue-800 uppercase tracking-wide text-[10px]">
+                    AI Executive Triage Summary (Flan-T5)
+                  </div>
+                  <p className="font-medium text-slate-700 leading-relaxed break-words">
+                    {clusterSummaries[cluster.clusterId] || "Synthesizing cluster telemetry..."}
+                  </p>
+                </div>
+
                 <div className="text-xs text-slate-500 font-mono">
                   Coordinates: {cluster.latitude?.toFixed(4)}, {cluster.longitude?.toFixed(4)}
                 </div>
 
-                <div className="bg-slate-50 rounded-xl p-3 border border-slate-100 space-y-2 mt-2 max-h-40 overflow-y-auto">
-                  {cluster.reports.map((r, idx) => {
-                    const parsed = parseReportContent(r.description);
-                    return (
-                      <div key={r.id || idx} className="text-xs text-slate-700 flex justify-between items-center bg-white p-2 rounded-lg border border-slate-100">
-                        <span className="truncate pr-2 font-medium">{parsed.text}</span>
-                        <div className="flex items-center gap-2 shrink-0">
-                          {parsed.imageUrl && (
-                            <button
-                              onClick={() => setModalImage(parsed.imageUrl)}
-                              className="px-2.5 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg text-[11px] font-bold transition"
-                            >
-                              See Photo
-                            </button>
-                          )}
-                          <span className="text-[10px] text-slate-400 whitespace-nowrap">
-                            {new Date(r.created_at).toLocaleTimeString()}
-                          </span>
-                        </div>
-                      </div>
-                    );
-                  })}
+                <div className="bg-slate-50 rounded-xl p-3 border border-slate-100 space-y-2 mt-2 max-h-48 overflow-y-auto">
+                  {cluster.reports.map((r, idx) => (
+                    <ReportRowItem 
+                      key={r.id || idx} 
+                      report={r} 
+                      parseReportContent={parseReportContent} 
+                      setModalImage={setModalImage} 
+                    />
+                  ))}
                 </div>
               </div>
 
-              <div className="flex flex-col items-end gap-2 w-full md:w-auto">
+              <div className="flex flex-col items-end gap-2 w-full md:w-auto shrink-0">
                 {cluster.status === 'active' ? (
                   <button
                     onClick={() => setResolvingCluster(cluster)}
