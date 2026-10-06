@@ -21,9 +21,11 @@
 
 This isolated incident is part of a massive, systemic failure with devastating cascading effects:
 
-*   **Massive Transit Loss:** Agriculture consumes roughly 80% of India's freshwater, yet **up to 50% is lost in transit** due to unmonitored canal breaches, seepage, and broken infrastructure ([FAO Aquastat](https://www.fao.org/aquastat/en/)).
-*   **Economic Threat:** Agriculture supports nearly half of India's workforce. According to government data, unchecked water mismanagement and scarcity threaten a **6% contraction in the national GDP by 2050** ([NITI Aayog](https://niti.gov.in/sites/default/files/2019-08/CWMI-2.0-latest.pdf)).
-*   **The Human Cost:** Delayed infrastructure repairs lead directly to localized crop failure and inescapable debt. The ultimate cost is measured in lives: according to the latest NCRB data, **10,546 people in the farm sector died by suicide in a single year—averaging one death every hour** ([Down To Earth](https://www.downtoearth.org.in/)). Behind every number is a family destroyed: a father who took loans for fertilizers, a mother who watched her crops die when the canal water never arrived, and a son who couldn't bear the debt after the monsoon failed[cite: 8].
+* **Massive Transit Loss:** Agriculture consumes roughly 80% of India's freshwater, yet **up to 50% is lost in transit** due to unmonitored canal breaches, seepage, and broken infrastructure ([FAO Aquastat](https://www.fao.org/aquastat/en/)).
+* **Economic Threat:** Agriculture supports nearly half of India's workforce. According to government data, unchecked water mismanagement and scarcity threaten a **6% contraction in the national GDP by 2050** ([NITI Aayog](https://niti.gov.in/sites/default/files/2019-08/CWMI-2.0-latest.pdf)).
+* **The Human Cost:** Delayed infrastructure repairs lead directly to localized crop failure and inescapable debt. The ultimate cost is measured in lives: according to the latest NCRB data, **10,546 people in the farm sector died by suicide in a single year—averaging one death every hour** ([Down To Earth](https://www.downtoearth.org.in/)). Behind every number is a family destroyed: a father who took loans for fertilizers, a mother who watched her crops die when the canal water never arrived, and a son who couldn't bear the debt after the monsoon failed.
+
+<br>
 
 ###  The Core Problem
 
@@ -31,21 +33,19 @@ The crisis is not just a lack of water—it is a catastrophic lack of **ground-t
 
 There is a severe communication and telemetry gap between rural agricultural communities and municipal authorities. Because there is no accessible, real-time reporting pipeline, critical infrastructure repairs only happen long after the crops are already damaged and millions of gallons of water are lost.
 
-
-
+---
 
 ## The Solution: Hydra
 
 Hydra is a complete municipal telemetry platform designed to bridge the gap between rural farming communities and local water authorities. It turns every farmer with a phone into an active reporting node, transforming chaotic voice notes and text messages into actionable intelligence for municipal command teams.
 
----
+<br>
 
 ### Why Hydra is Urgently Needed
 
 When a pipe ruptures or a canal blocks, time is everything. Right now, farmers have to navigate slow bureaucracy or rely on word of mouth to get help. By the time an official hears about a failure, days have passed, millions of gallons of water are lost, and crops are already ruined. 
 
 Hydra is needed because it removes all friction from reporting. It gives farmers an instant voice channel while giving municipal authorities the exact geospatial location and automated context they need to dispatch repair crews immediately.
-
 ---
 
 ### How Hydra Solves the Crisis
