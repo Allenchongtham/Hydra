@@ -117,8 +117,9 @@ Hydra replaces blind spots with live visibility through a simple four step workf
 | **Infrastructure** | Asynchronous FastAPI Backend Services | ✅ |
 
 
-```
-## System Architecture & User Flow
+## Platform User Journeys
+
+```text
 Hydra Platform User Journeys
 │
 ├── Journey A: Farmer & Community User (Reporting Pipeline)
@@ -141,6 +142,7 @@ Hydra Platform User Journeys
         └── Dynamic database update -> Instant removal from GIS maps & heatmaps
 
 
+```
 ## 1. End-to-End Technical Flow
 
 ```text
