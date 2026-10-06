@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../services/supabase';
 
-// Reusable component for individual report rows with expand/collapse support
+
 function ReportRowItem({ report, parseReportContent, setModalImage }) {
   const [expanded, setExpanded] = useState(false);
   const parsed = parseReportContent(report.description);
