@@ -240,3 +240,13 @@ Hydra/
 * **Combating Transit Loss:** Directly targets and reduces the massive 50% agricultural water transit loss by shrinking the timeline between a pipeline rupture and municipal awareness.
 * **Systemic Transparency:** Immutable database logging creates a verifiable paper trail of active versus resolved issues, holding local governance accountable to repair timelines.
 * **Food & Economic Security:** Securing irrigation water stabilizes local food supplies, protecting the agricultural foundation of the regional and national economy.
+
+
+
+
+## Team Glitch
+
+| Developer | Core Responsibilities | Connect |
+| :--- | :--- | :--- |
+| **Chongtham Allen** | Backend API, Edge-AI Engine & Database Architecture | [GitHub](https://github.com/Allenchongtham) \| [LinkedIn](https://www.linkedin.com/in/chongtham-allen-7057303b5) |
+| **James Khuraijam** | Frontend Development, UI/UX & Client Integration | [GitHub](https://github.com/jameskhuraijam63-dotcom) \| [LinkedIn](https://www.linkedin.com/in/james-khuraijam-8953813ab) |
