@@ -117,6 +117,7 @@ Hydra replaces blind spots with live visibility through a simple four step workf
 | **Infrastructure** | Asynchronous FastAPI Backend Services | ✅ |
 
 
+```
 ## System Architecture & User Flow
 Hydra Platform User Journeys
 │
