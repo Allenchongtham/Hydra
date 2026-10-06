@@ -9,7 +9,6 @@ from transformers import pipeline
 
 load_dotenv()
 
-# 1. Initialize FastAPI app FIRST
 app = FastAPI(title="Hydra AI Triage API")
 
 app.add_middleware(
@@ -28,7 +27,6 @@ if not supabase_url or not supabase_key:
 
 supabase: Client = create_client(supabase_url, supabase_key)
 
-# 2. Initialize Hugging Face Flan-T5 lightweight model
 print("Loading Flan-T5 AI Triage Model...")
 try:
     triage_classifier = pipeline("text-generation", model="google/flan-t5-small")
@@ -45,7 +43,6 @@ class SummaryRequest(BaseModel):
     descriptions: list[str]
     issue_type: str
 
-# 3. Define routes AFTER app is initialized
 @app.get("/")
 def read_root():
     return {"status": "Hydra Backend with Flan-T5 Triage Engine is operational"}
