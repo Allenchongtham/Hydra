@@ -1,3 +1,19 @@
+# SUBMISSION LINKS
+
+- **[▶ Watch Demo Video](INSERT_YOUR_DRIVE_VIDEO_LINK)**
+- **[▤ Presentation Slides](https://docs.google.com/presentation/d/1jyC2aqdE-3qAbDXx5ckow6Gzu2kbP6oN/edit?usp=sharing&ouid=116748279182201553663&rtpof=true&sd=true)**
+
+---
+
+
+
+
+
+
+
+
+
+
 # Hydra
 
 ### AI-Powered Irrigation Telemetry & Municipal Command Platform
