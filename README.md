@@ -197,9 +197,6 @@ Hydra AI Core Engine
 
 
 
-<img width="1774" height="887" alt="Neon Municipal AI Architecture Flow (1)" src="https://github.com/user-attachments/assets/6989d150-5bb4-48a6-b13d-2694d6ca15e3" />
-
-
 
 
 
