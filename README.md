@@ -198,7 +198,6 @@ Hydra AI Core Engine
 
 
 
-```
 ![System Architecture Flow](Architecture.png)
 
 ```
